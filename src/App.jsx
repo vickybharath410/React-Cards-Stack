@@ -3,8 +3,9 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-
 import { history } from '_helpers';
 import { Nav, PrivateRoute } from '_components';
 import { Home } from 'home';
-import { Login } from 'login';
-
+import  Login from './login/Login';
+import Register from 'login/Register';
+import Card from "./Cards/Card"
 export { App };
 
 function App() {
@@ -26,6 +27,8 @@ function App() {
                             </PrivateRoute>
                         }
                     />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/cards" element={<Card />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

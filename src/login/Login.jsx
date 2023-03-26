@@ -1,71 +1,130 @@
-import { useEffect } from 'react';
-import { useForm } from "react-hook-form";
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
-import { useSelector, useDispatch } from 'react-redux';
-
-import { history } from '_helpers';
-import { authActions } from '_store';
-
-export { Login };
-
+import React, { useState } from "react";
+// import "./login.css";
+import { MdEmail } from "react-icons/md";
+import { RiLockPasswordFill } from "react-icons/ri";
+import { AiFillEye } from "react-icons/ai";
+import { AiOutlineEyeInvisible } from "react-icons/ai";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 function Login() {
-    const dispatch = useDispatch();
-    const authUser = useSelector(x => x.auth.user);
-    const authError = useSelector(x => x.auth.error);
+  const [details, setDetails] = useState({
+    email: "",
+    password: "",
+  });
 
-    useEffect(() => {
-        // redirect to home if already logged in
-        if (authUser) history.navigate('/');
+  const navigate = useNavigate();
+  async function onsubmits(e) {   
+    e.preventDefault(e);
+    const { userid, password } = details;
+    let url = "https://interview-api.onrender.com/v1/auth/login";
+    axios
+      .post(url, {
+        email: userid,
+        password: password,
+      })
+      .then((res) => {
+        console.log(res);
+        localStorage.setItem("email", res.data.email);
+        localStorage.setItem("name", res.data.name);
+        localStorage.setItem("token", res.data.token);
+        // localStorage.setItem("userID", res.data.userId);
+        navigate("/");
+      })
+      .catch((err) => console.log(err));
+  }
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // form validation rules 
-    const validationSchema = Yup.object().shape({
-        username: Yup.string().required('Username is required'),
-        password: Yup.string().required('Password is required')
-    });
-    const formOptions = { resolver: yupResolver(validationSchema) };
-
-    // get functions to build form with useForm() hook
-    const { register, handleSubmit, formState } = useForm(formOptions);
-    const { errors, isSubmitting } = formState;
-
-    function onSubmit({ username, password }) {
-        return dispatch(authActions.login({ username, password }));
+  const [showPass, setShowPass] = useState(false);
+  function passwordChange() {
+    var x = document.getElementById("myInput");
+    if (x.type === "password") {
+      x.type = "text";
+    } else {
+      x.type = "password";
     }
-
-    return (
-        <div className="col-md-6 offset-md-3 mt-5">
-            <div className="alert alert-info">
-                Username: test<br />
-                Password: test
-            </div>
-            <div className="card">
-                <h4 className="card-header">Login</h4>
-                <div className="card-body">
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <div className="form-group">
-                            <label>Username</label>
-                            <input name="username" type="text" {...register('username')} className={`form-control ${errors.username ? 'is-invalid' : ''}`} />
-                            <div className="invalid-feedback">{errors.username?.message}</div>
-                        </div>
-                        <div className="form-group">
-                            <label>Password</label>
-                            <input name="password" type="password" {...register('password')} className={`form-control ${errors.password ? 'is-invalid' : ''}`} />
-                            <div className="invalid-feedback">{errors.password?.message}</div>
-                        </div>
-                        <button disabled={isSubmitting} className="btn btn-primary">
-                            {isSubmitting && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                            Login
-                        </button>
-                        {authError &&
-                            <div className="alert alert-danger mt-3 mb-0">{authError.message}</div>
-                        }
-                    </form>
-                </div>
-            </div>
+    setShowPass(!showPass);
+  }
+  return (
+    <div className="formdiv">
+      <form
+        onSubmit={(e) => onsubmits(e)}
+        className="container formtag"
+        style={{ width: "400px", maxWidth: "80%", maxHeight: "70%" }}
+      >
+        <img
+          className="logo"
+          alt="logo"
+          style={{ maxHeight: "45px", maxWidth: "45px" }}
+          src="https://cdn5.vectorstock.com/i/1000x1000/45/29/house-gold-leaf-logo-vector-14984529.jpg"
+        />
+        <h6>Enter your credentials to access your account</h6>
+        <div className="input-group mb-3">
+          <div className="input-group-prepend">
+            <span
+              className="input-group-text"
+              style={{ width: "60px" }}
+              id="basic-addon1"
+            >
+              <MdEmail />
+            </span>
+          </div>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Enter your Email"
+            aria-label="Email"
+            value={details.userid}
+            onChange={(e) => setDetails({ ...details, userid: e.target.value })}
+            aria-describedby="basic-addon1"
+          />
         </div>
-    )
+        <div className="input-group mb-3">
+          <div className="input-group-prepend">
+            <span
+              className="input-group-text"
+              style={{ width: "60px" }}
+              id="basic-addon1"
+            >
+              <RiLockPasswordFill />
+            </span>
+          </div>
+          <input
+            type="password"
+            id="myInput"
+            value={details.password}
+            onChange={(e) =>
+              setDetails({ ...details, password: e.target.value })
+            }
+            className="form-control"
+            placeholder="Enter your Email"
+            aria-label="Email"
+            aria-describedby="basic-addon1"
+          />
+          <span
+            onClick={() => passwordChange()}
+            className="input-group-text"
+            style={{ width: "50px" }}
+            id="basic-addon1"
+          >
+            {showPass ? <AiOutlineEyeInvisible /> : <AiFillEye />}
+          </span>
+        </div>
+        <button
+          type="submit"
+          onClick={(e) => {
+            onsubmits(e);
+          }}
+          className="btn custom-btn"
+          id="form-submit"
+        >
+          Submit
+        </button>
+        <span className="linkform">
+          <Link to="/register">Sign Up</Link>
+        </span>
+      </form>
+    </div>
+  );
 }
+
+export default Login;
